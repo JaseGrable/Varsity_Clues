@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>League Details</title>
+</head>
+<body>
+    <h1>{{ league.name }}</h1>
+    <h2>Teams</h2>
+    <ul>
+        {% for roster in rosters %}
+        <li>
+            <a href="{{ url_for('roster_details', league_id=league.league_id, roster_id=roster.roster_id) }}">
+                {{ roster.team_name }}
+            </a> 
+        </li>
+        {% endfor %}
+    </ul>
+    <h2>Weekly Matchups</h2>
+    {% if matchups %}
+    {% for matchup in matchups %}
+    <div>
+        <h3>{{ matchup.team1.name }} vs {{ matchup.team2.name }}</h3>
+        <p>Starters ({{ matchup.team1.name }}): {{ matchup.team1.starters }}</p>
+        <p>Starters ({{ matchup.team2.name }}): {{ matchup.team2.starters }}</p>
+        <p>{{ matchup.team1.name }}: {{ matchup.team1.points }} points</p>
+        <p>{{ matchup.team2.name }}: {{ matchup.team2.points }} points</p>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>No matchups found for this week.</p>
+    {% endif %}
+</body>
+</html>
+

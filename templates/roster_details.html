@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Roster Details</title>
+</head>
+<body>
+    <h1>{{ team_name }}</h1>
+    <p>Owner: {{ username }}</p>
+    <h2>Starters</h2>
+    <ul>
+        {% for player in starters %}
+        <li>{{ player }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Bench</h2>
+    <ul>
+        {% for player in bench %}
+        <li>{{ player }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Taxi Squad</h2>
+    <ul>
+        {% for player in taxi %}
+        <li>{{ player }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Draft Picks</h2>
+    <ul>
+        {% for pick in draft_picks %}
+        <li>{{ pick }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
