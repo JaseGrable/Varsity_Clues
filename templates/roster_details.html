@@ -9,6 +9,27 @@
     <h1>{{ team_name }}</h1>
     <h2>Owner: {{ username }}</h2>
 
+    <h3>Starters</h3>
+    <ul>
+        {% for player in starters %}
+        <li>{{ player }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Bench</h3>
+    <ul>
+        {% for player in bench %}
+        <li>{{ player }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Taxi Squad</h3>
+    <ul>
+        {% for player in taxi %}
+        <li>{{ player }}</li>
+        {% endfor %}
+    </ul>
+
     <h3>Draft Picks</h3>
     <ul>
         {% for pick in draft_picks %}

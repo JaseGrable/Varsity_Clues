@@ -91,8 +91,8 @@ def league_details(league_id):
     rosters = get_league_rosters(league_id)
     users = get_league_users(league_id)
 
-    if not rosters or not users:
-        return render_template('league_details.html', error="Rosters or users not found.")
+    if not league or not rosters or not users:
+        return render_template('league_details.html', error="League details, rosters, or users not found.")
 
     # Map roster_id to team_name and username
     user_map = {
@@ -103,10 +103,11 @@ def league_details(league_id):
         for user in users
     }
 
+    # Add team name and username to each roster
     for roster in rosters:
-        user_info = user_map.get(roster['owner_id'], {'team_name': f"Roster {roster['roster_id']}", 'username': 'Unknown User'})
-        roster['team_name'] = user_info['team_name']
-        roster['username'] = user_info['username']
+        owner_info = user_map.get(roster['owner_id'], {'team_name': f"Roster {roster['roster_id']}", 'username': 'Unknown User'})
+        roster['team_name'] = owner_info['team_name']
+        roster['username'] = owner_info['username']
 
     return render_template('league_details.html', league=league, rosters=rosters)
 
@@ -130,21 +131,42 @@ def roster_details(league_id, roster_id):
     team_name = user_info.get('metadata', {}).get('team_name', f"Roster {roster_id}")
     username = user_info.get('display_name', "Unknown User")
 
-    # Build draft picks list
+    # Fetch starters, bench, and taxi squad
+    starters = roster.get('starters', [])
+    bench = [player for player in roster.get('players', []) if player not in starters]
+    taxi = roster.get('taxi', [])
+
+    # Build draft picks list (2025 and beyond)
     draft_picks = []
     for pick in traded_picks or []:
-        if pick['owner_id'] == roster_id:
-            original_team = next((u['metadata'].get('team_name', f"Roster {pick['roster_id']}") for u in users if u['user_id'] == pick['roster_id']), f"Roster {pick['roster_id']}")
+        if pick['owner_id'] == roster_id and int(pick['season']) >= 2025:
+            original_team = next(
+                (u['metadata'].get('team_name', f"Roster {pick['roster_id']}") for u in users if u['user_id'] == pick['roster_id']),
+                f"Roster {pick['roster_id']}"
+            )
             draft_picks.append(f"{pick['season']} Round {pick['round']} ({original_team})")
 
-    # Add untraded picks
-    for year in range(2025, 2028):
-        for round_num in range(1, 5):
-            if not any(int(p['season']) == year and int(p['round']) == round_num for p in traded_picks or []):
+    # Add untraded picks for this team
+    for year in range(2025, 2028):  # Adjust range for future seasons
+        for round_num in range(1, 5):  # Assume 4 rounds per season
+            if not any(int(p['season']) == year and int(p['round']) == round_num and p['owner_id'] == roster_id for p in traded_picks or []):
                 draft_picks.append(f"{year} Round {round_num}")
 
-    return render_template('roster_details.html', team_name=team_name, username=username, draft_picks=sorted(draft_picks))
+    # Filter out duplicates and sort draft picks
+    draft_picks = sorted(set(draft_picks))
+
+    return render_template(
+        'roster_details.html',
+        team_name=team_name,
+        username=username,
+        starters=starters,
+        bench=bench,
+        taxi=taxi,
+        draft_picks=draft_picks
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
 
