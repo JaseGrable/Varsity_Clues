@@ -1,34 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>League Details</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ league.name }}</title>
 </head>
 <body>
     <h1>{{ league.name }}</h1>
+
     <h2>Teams</h2>
-    <ul>
-        {% for roster in rosters %}
-        <li>
-            <a href="{{ url_for('roster_details', league_id=league.league_id, roster_id=roster.roster_id) }}">
-                {{ roster.team_name }}
-            </a> 
-        </li>
-        {% endfor %}
-    </ul>
-    <h2>Weekly Matchups</h2>
-    {% if matchups %}
-    {% for matchup in matchups %}
-    <div>
-        <h3>{{ matchup.team1.name }} vs {{ matchup.team2.name }}</h3>
-        <p>Starters ({{ matchup.team1.name }}): {{ matchup.team1.starters }}</p>
-        <p>Starters ({{ matchup.team2.name }}): {{ matchup.team2.starters }}</p>
-        <p>{{ matchup.team1.name }}: {{ matchup.team1.points }} points</p>
-        <p>{{ matchup.team2.name }}: {{ matchup.team2.points }} points</p>
-    </div>
-    {% endfor %}
-    {% else %}
-    <p>No matchups found for this week.</p>
-    {% endif %}
+    <table border="1" style="width: 100%; text-align: left;">
+        <thead>
+            <tr>
+                <th>Team Name</th>
+                <th>Owner</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for roster in rosters %}
+            <tr>
+                <td><a href="{{ url_for('roster_details', league_id=league.league_id, roster_id=roster.roster_id) }}">{{ roster.team_name }}</a></td>
+                <td>{{ roster.username }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Standings</h2>
+    <table border="1" style="width: 100%; text-align: left;">
+        <thead>
+            <tr>
+                <th>Team Name</th>
+                <th>PF</th>
+                <th>PA</th>
+                <th>Record</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for roster in rosters %}
+            <tr>
+                <td>{{ roster.team_name }}</td>
+                <td>{{ roster.settings.fpts }}</td>
+                <td>{{ roster.settings.fpts_against }}</td>
+                <td>{{ roster.settings.wins }}-{{ roster.settings.losses }}-{{ roster.settings.ties }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>
-

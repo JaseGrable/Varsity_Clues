@@ -1,18 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Your Leagues</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leagues</title>
 </head>
 <body>
     <h1>Your Leagues</h1>
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
-    {% else %}
     <ul>
         {% for league in leagues %}
-        <li><a href="{{ url_for('league_details', league_id=league['league_id']) }}">{{ league['name'] }}</a></li>
+        <li>
+            <a href="{{ url_for('league_details', league_id=league.league_id) }}">{{ league.name }}</a>
+        </li>
         {% endfor %}
     </ul>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
     {% endif %}
 </body>
 </html>
