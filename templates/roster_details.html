@@ -22,13 +22,20 @@
     <ul>
         {% for player in taxi %}
         <li>{{ player }}</li>
+        {% else %}
+        <li>No players in taxi squad</li>
         {% endfor %}
     </ul>
     <h2>Draft Picks</h2>
     <ul>
+        {% if draft_picks %}
         {% for pick in draft_picks %}
         <li>{{ pick }}</li>
         {% endfor %}
+        {% else %}
+        <li>No draft picks</li>
+        {% endif %}
     </ul>
 </body>
 </html>
+
