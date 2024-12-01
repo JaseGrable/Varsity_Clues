@@ -55,6 +55,16 @@ def get_league_users(league_id):
         print(f"Error fetching users: {e}")
         return None
 
+# Fetch matchups for a given league and week
+def get_matchups(league_id, week):
+    try:
+        response = requests.get(f"{BASE_URL}/league/{league_id}/matchups/{week}")
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"Error fetching matchups: {e}")
+        return None
+
 # Fetch traded picks for a league
 def get_traded_picks(league_id):
     try:
@@ -64,6 +74,17 @@ def get_traded_picks(league_id):
     except Exception as e:
         print(f"Error fetching traded picks: {e}")
         return None
+
+# Fetch the current NFL week
+def get_current_week():
+    try:
+        response = requests.get(f"{BASE_URL}/state/nfl")
+        response.raise_for_status()
+        state = response.json()
+        return state.get('week', 1)
+    except Exception as e:
+        print(f"Error fetching current week: {e}")
+        return 1
 
 # Home page for entering Sleeper username
 @app.route('/', methods=['GET', 'POST'])
@@ -84,12 +105,13 @@ def leagues(user_id):
         return render_template('leagues.html', error="No leagues found.")
     return render_template('leagues.html', leagues=leagues)
 
-# Display league details with team and standings
+# Display league details with team, standings, and matchups
 @app.route('/league/<string:league_id>', methods=['GET'])
 def league_details(league_id):
     league = get_league_details(league_id)
     rosters = get_league_rosters(league_id)
     users = get_league_users(league_id)
+    current_week = get_current_week()
 
     if not league or not rosters or not users:
         return render_template('league_details.html', error="League details, rosters, or users not found.")
@@ -109,7 +131,35 @@ def league_details(league_id):
         roster['team_name'] = owner_info['team_name']
         roster['username'] = owner_info['username']
 
-    return render_template('league_details.html', league=league, rosters=rosters)
+    # Fetch matchups for the current week
+    matchups = get_matchups(league_id, current_week)
+
+    # Combine matchup data
+    matchup_pairs = {}
+    for team in matchups or []:
+        matchup_id = team['matchup_id']
+        if matchup_id not in matchup_pairs:
+            matchup_pairs[matchup_id] = [team]
+        else:
+            matchup_pairs[matchup_id].append(team)
+
+    formatted_matchups = []
+    for matchup in matchup_pairs.values():
+        if len(matchup) == 2:
+            team1 = next((roster for roster in rosters if roster['roster_id'] == matchup[0]['roster_id']), {})
+            team2 = next((roster for roster in rosters if roster['roster_id'] == matchup[1]['roster_id']), {})
+            formatted_matchups.append({
+                'team1': {
+                    'name': team1.get('team_name', f"Roster {matchup[0]['roster_id']}"),
+                    'points': matchup[0].get('points', 0)
+                },
+                'team2': {
+                    'name': team2.get('team_name', f"Roster {matchup[1]['roster_id']}"),
+                    'points': matchup[1].get('points', 0)
+                }
+            })
+
+    return render_template('league_details.html', league=league, rosters=rosters, matchups=formatted_matchups)
 
 # Display detailed roster information
 @app.route('/league/<string:league_id>/roster/<int:roster_id>', methods=['GET'])
@@ -167,6 +217,7 @@ def roster_details(league_id, roster_id):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
