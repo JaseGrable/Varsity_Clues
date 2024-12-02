@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League History - {{ league.name }}</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h1>League History: {{ league.name }}</h1>
+
+    <h2>Standings</h2>
+    <table>
+        <tr>
+            <th>Rank</th>
+            <th>Team</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>PF</th>
+            <th>PA</th>
+        </tr>
+        {% for roster in rosters %}
+        <tr>
+            <td>{{ roster.rank }}</td>
+            <td>{{ roster.team_name }}</td>
+            <td>{{ roster.settings.wins }}</td>
+            <td>{{ roster.settings.losses }}</td>
+            <td>{{ roster.settings.fpts }}</td>
+            <td>{{ roster.settings.fpts_against }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Playoff Bracket</h2>
+    <h3>Winners Bracket</h3>
+    {% if winners_bracket %}
+    <table>
+        <tr>
+            <th>Round</th>
+            <th>Matchup</th>
+            <th>Team 1</th>
+            <th>Team 2</th>
+        </tr>
+        {% for match in winners_bracket %}
+        <tr>
+            <td>{{ match.r }}</td>
+            <td>{{ match.m }}</td>
+            <td>{{ match.t1 }}</td>
+            <td>{{ match.t2 }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p>No winners bracket data available.</p>
+    {% endif %}
+
+    <h3>Losers Bracket</h3>
+    {% if losers_bracket %}
+    <table>
+        <tr>
+            <th>Round</th>
+            <th>Matchup</th>
+            <th>Team 1</th>
+            <th>Team 2</th>
+        </tr>
+        {% for match in losers_bracket %}
+        <tr>
+            <td>{{ match.r }}</td>
+            <td>{{ match.m }}</td>
+            <td>{{ match.t1 }}</td>
+            <td>{{ match.t2 }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p>No losers bracket data available.</p>
+    {% endif %}
+
+    <p><a href="{{ url_for('league_details', league_id=league.league_id) }}">Back to League Details</a></p>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>

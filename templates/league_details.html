@@ -37,7 +37,7 @@
         }
     </style>
 </head>
-<body>
+<>
     <h1>{{ league.name }}</h1>
 
     <h2>Teams</h2>
@@ -54,25 +54,25 @@
     <h2>Standings</h2>
     <table>
         <tr>
+            <th>Rank</th>
             <th>Team</th>
             <th>Wins</th>
             <th>Losses</th>
-            <th>Ties</th>
             <th>PF</th>
             <th>PA</th>
         </tr>
         {% for roster in rosters %}
         <tr>
+            <td>{{ roster.rank }}</td>
             <td>{{ roster.team_name }}</td>
             <td>{{ roster.settings.wins }}</td>
             <td>{{ roster.settings.losses }}</td>
-            <td>{{ roster.settings.ties }}</td>
             <td>{{ roster.settings.fpts }}</td>
             <td>{{ roster.settings.fpts_against }}</td>
         </tr>
         {% endfor %}
     </table>
-
+    
     <h2>Matchups</h2>
     {% if matchups %}
     <table>
@@ -92,8 +92,10 @@
         {% endfor %}
     </table>
     {% else %}
-        <p>No matchups available for the current week.</p>
+    <p>No matchups available for the current week.</p>
     {% endif %}
+
+    <h3><a href="{{ url_for('league_history', league_id=league.league_id) }}">View League History</a></h3>
 
     {% if error %}
         <p style="color: red;">{{ error }}</p>

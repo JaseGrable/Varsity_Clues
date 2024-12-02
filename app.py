@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 import requests
 import pymysql
-from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
 
@@ -71,6 +70,16 @@ def get_league_users(league_id):
         print(f"Error fetching users: {e}")
         return None
 
+# Fetch matchups for a league and week
+def get_league_matchups(league_id, week):
+    try:
+        response = requests.get(f"{BASE_URL}/league/{league_id}/matchups/{week}")
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"Error fetching matchups: {e}")
+        return None
+
 # Fetch the current NFL week
 def get_current_week():
     try:
@@ -81,7 +90,7 @@ def get_current_week():
         print(f"Error fetching current week: {e}")
         return 1
 
-# Function to map player IDs to player names using the database
+# Map player IDs to player names using the database
 def map_players(player_ids):
     if not player_ids:
         return []
@@ -136,7 +145,7 @@ def league_details(league_id):
     users = get_league_users(league_id)
 
     if not league or not rosters or not users:
-        return render_template('league_details.html', error="League details, rosters, or users not found.")
+        return render_template('league_details.html', error="League details, rosters, or users not found.", rosters=[], matchups=[])
 
     # Map user IDs to team names and usernames
     user_map = {
@@ -147,13 +156,43 @@ def league_details(league_id):
         for user in users
     }
 
-    # Add team details to rosters
+    # Add team details to rosters and calculate rankings
     for roster in rosters:
         owner_info = user_map.get(roster['owner_id'], {'team_name': f"Roster {roster['roster_id']}", 'username': 'Unknown User'})
         roster['team_name'] = owner_info['team_name']
         roster['username'] = owner_info['username']
 
-    return render_template('league_details.html', league=league, rosters=rosters)
+    # Sort rosters for standings: by wins, then PF (descending order)
+    rosters = sorted(rosters, key=lambda r: (-r['settings']['wins'], -r['settings']['fpts']))
+
+    # Assign rank to each roster
+    for index, roster in enumerate(rosters, start=1):
+        roster['rank'] = index
+
+    # Fetch current matchups
+    current_week = get_current_week()
+    matchups_data = requests.get(f"{BASE_URL}/league/{league_id}/matchups/{current_week}").json()
+
+    # Process matchups
+    matchups = []
+    for matchup in matchups_data:
+        team1 = next((r for r in rosters if r['roster_id'] == matchup['roster_id']), None)
+        team2 = next((m for m in matchups_data if m.get('matchup_id') == matchup.get('matchup_id') and m['roster_id'] != matchup['roster_id']), None)
+
+        if team1 and team2:
+            matchups.append({
+                'team1': {
+                    'name': team1['team_name'],
+                    'points': matchup.get('points', 0)
+                },
+                'team2': {
+                    'name': next((r['team_name'] for r in rosters if r['roster_id'] == team2['roster_id']), 'Unknown'),
+                    'points': team2.get('points', 0)
+                }
+            })
+
+    return render_template('league_details.html', league=league, rosters=rosters, matchups=matchups)
+
 
 # Route to display roster details
 @app.route('/league/<string:league_id>/roster/<int:roster_id>', methods=['GET'])
@@ -187,11 +226,20 @@ def roster_details(league_id, roster_id):
         bench=bench,
         taxi=taxi
     )
+@app.route('/league/<string:league_id>/history', methods=['GET'])
+def league_history(league_id):
+    league = get_league_details(league_id)
+
+    if not league or not league.get('previous_league_id'):
+        return render_template('league_history.html', error="No history available for this league.", league=None, previous_league=None)
+
+    # Fetch the previous league details using the previous_league_id
+    previous_league_id = league['previous_league_id']
+    previous_league = get_league_details(previous_league_id)
+
+    return render_template('league_history.html', league=league, previous_league=previous_league)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-
 
