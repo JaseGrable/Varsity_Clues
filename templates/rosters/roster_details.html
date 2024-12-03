@@ -23,12 +23,19 @@
         {% endfor %}
     </ul>
 
+    {% if taxi %}
     <h3>Taxi Squad</h3>
     <ul>
         {% for player in taxi %}
         <li>{{ player }}</li>
         {% endfor %}
     </ul>
+    {% else %}
+    <p>No players in Taxi Squad.</p>
+    {% endif %}
+</body>
+</html>
+
 
     <h3>Draft Picks</h3>
     <ul>

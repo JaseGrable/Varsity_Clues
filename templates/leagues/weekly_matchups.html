@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Matchups</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1, h3 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        hr {
+            margin: 20px 0;
+        }
+        .no-data {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>Week {{ week }} Matchups</h1>
+
+    {% if matchups %}
+    <table>
+        <thead>
+            <tr>
+                <th>Teams</th>
+                <th>Starters ({{ matchup.team1.name }})</th>
+                <th>Starters ({{ matchup.team2.name }})</th>
+                <th>{{ matchup.team1.name }} Points</th>
+                <th>{{ matchup.team2.name }} Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for matchup in matchups %}
+            <tr>
+                <td>{{ matchup.team1.name }} vs {{ matchup.team2.name }}</td>
+                <td>
+                    {% if matchup.team1.starters %}
+                        {{ matchup.team1.starters | join(", ") }}
+                    {% else %}
+                        <span class="no-data">No starters listed</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if matchup.team2.starters %}
+                        {{ matchup.team2.starters | join(", ") }}
+                    {% else %}
+                        <span class="no-data">No starters listed</span>
+                    {% endif %}
+                </td>
+                <td>{{ matchup.team1.points }}</td>
+                <td>{{ matchup.team2.points }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No matchups found for this week.</p>
+    {% endif %}
+</body>
+</html>
