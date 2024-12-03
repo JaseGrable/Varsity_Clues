@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ league.name or "League Details" }}</title>
+    <title>{{ league.name }}</title>
     <style>
         table {
             width: 100%;
@@ -38,14 +38,14 @@
     </style>
 </head>
 <body>
-    <h1>{{ league.name or "League Details" }}</h1>
+    <h1>{{ league.name }}</h1>
 
     <h2>Teams</h2>
     <div class="team-box">
         {% for roster in rosters %}
         <div class="team-card">
             <a href="{{ url_for('rosters.roster_details', league_id=league.league_id, roster_id=roster.roster_id) }}">
-                {{ roster.team_name or "Unknown Team" }} : {{ roster.username or "Unknown User" }}
+                {{ roster.team_name }} : {{ roster.username }}
             </a>
         </div>
         {% endfor %}
@@ -63,17 +63,17 @@
         </tr>
         {% for roster in rosters %}
         <tr>
-            <td>{{ roster.rank or "-" }}</td>
-            <td>{{ roster.team_name or "Unknown Team" }}</td>
-            <td>{{ roster.settings.wins or 0 }}</td>
-            <td>{{ roster.settings.losses or 0 }}</td>
-            <td>{{ roster.settings.fpts or 0 }}</td>
-            <td>{{ roster.settings.fpts_against or 0 }}</td>
+            <td>{{ roster.rank }}</td>
+            <td>{{ roster.team_name }}</td>
+            <td>{{ roster.settings.wins }}</td>
+            <td>{{ roster.settings.losses }}</td>
+            <td>{{ roster.settings.fpts }}</td>
+            <td>{{ roster.settings.fpts_against }}</td>
         </tr>
         {% endfor %}
     </table>
-    
-    <h2>Matchups</h2>
+
+    <h2>Week {{ week }} Matchups</h2>
     {% if matchups %}
     <table>
         <tr>
@@ -84,20 +84,15 @@
         </tr>
         {% for matchup in matchups %}
         <tr>
-            <td>{{ matchup.team1.name or "Unknown Team" }}</td>
-            <td>{{ matchup.team1.points or 0 }}</td>
-            <td>{{ matchup.team2.name or "Unknown Team" }}</td>
-            <td>{{ matchup.team2.points or 0 }}</td>
+            <td>{{ matchup.team1.name }}</td>
+            <td>{{ matchup.team1.points }}</td>
+            <td>{{ matchup.team2.name }}</td>
+            <td>{{ matchup.team2.points }}</td>
         </tr>
         {% endfor %}
     </table>
     {% else %}
-    <p>No matchups available for the current week.</p>
-    {% endif %}
-
-    {% if previous_league_id %}
-    <h3><a href="{{ url_for('leagues.league_history', league_id=previous_league_id) }}">View League History</a></h3>
+    <p>No matchups found for the current week.</p>
     {% endif %}
 </body>
 </html>
-

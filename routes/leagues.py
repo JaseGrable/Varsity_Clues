@@ -65,11 +65,11 @@ def league_details(league_id):
     current_week = get_current_week()
     matchups_data = get_league_matchups(league_id, current_week)
 
-    # Process matchups into the required structure
+    # Process matchups
     matchups = []
     for matchup in matchups_data:
         team1 = next((r for r in rosters if r["roster_id"] == matchup["roster_id"]), None)
-        opponent_id = matchup.get("opponent_roster_id")
+        opponent_id = matchup.get("matchup_id")
         team2 = next((r for r in rosters if r["roster_id"] == opponent_id), None)
 
         matchups.append(
@@ -80,31 +80,16 @@ def league_details(league_id):
                 },
                 "team2": {
                     "name": team2["team_name"] if team2 else "Unknown Team",
-                    "points": matchup.get("opponent_points", 0),
+                    "points": matchup.get("points_against", 0),
                 },
             }
         )
 
-    return render_template("leagues/league_details.html", league=league, rosters=rosters, matchups=matchups)
-
-# Route to display league history
-@leagues_bp.route("/<string:league_id>/history", methods=["GET"])
-def league_history(league_id):
-    league, standings = fetch_previous_league_data(league_id)
-    if not league:
-        return render_template(
-            "leagues/league_history.html",
-            error="League history not found.",
-            standings=[],
-            winners_bracket=[],
-            losers_bracket=[],
-        )
-    winners_bracket = []  # Replace with actual playoff bracket logic
-    losers_bracket = []  # Replace with actual playoff bracket logic
     return render_template(
-        "leagues/league_history.html",
+        "leagues/league_details.html",
         league=league,
-        standings=standings,
-        winners_bracket=winners_bracket,
-        losers_bracket=losers_bracket,
+        rosters=rosters,
+        matchups=matchups,
+        week=current_week,
     )
+

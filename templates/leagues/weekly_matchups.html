@@ -17,6 +17,8 @@
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
+            overflow-x: auto;
+            display: block;
         }
         th, td {
             border: 1px solid #ddd;
@@ -26,11 +28,32 @@
         th {
             background-color: #f4f4f4;
         }
+        tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
         hr {
             margin: 20px 0;
         }
         .no-data {
             color: #888;
+        }
+        .team-name {
+            display: flex;
+            align-items: center;
+        }
+        .team-logo {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        a {
+            text-decoration: none;
+            color: #007BFF;
+        }
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -41,32 +64,36 @@
     <table>
         <thead>
             <tr>
-                <th>Teams</th>
-                <th>Starters ({{ matchup.team1.name }})</th>
-                <th>Starters ({{ matchup.team2.name }})</th>
-                <th>{{ matchup.team1.name }} Points</th>
-                <th>{{ matchup.team2.name }} Points</th>
+                <th>Team 1</th>
+                <th>Points</th>
+                <th>Team 2</th>
+                <th>Points</th>
             </tr>
         </thead>
         <tbody>
             {% for matchup in matchups %}
             <tr>
-                <td>{{ matchup.team1.name }} vs {{ matchup.team2.name }}</td>
                 <td>
-                    {% if matchup.team1.starters %}
-                        {{ matchup.team1.starters | join(", ") }}
-                    {% else %}
-                        <span class="no-data">No starters listed</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if matchup.team2.starters %}
-                        {{ matchup.team2.starters | join(", ") }}
-                    {% else %}
-                        <span class="no-data">No starters listed</span>
-                    {% endif %}
+                    <div class="team-name">
+                        {% if matchup.team1.logo %}
+                        <img src="{{ matchup.team1.logo }}" alt="{{ matchup.team1.name }} Logo" class="team-logo">
+                        {% endif %}
+                        <a href="{{ url_for('rosters.roster_details', league_id=league_id, roster_id=matchup.team1.id) }}">
+                            {{ matchup.team1.name }}
+                        </a>
+                    </div>
                 </td>
                 <td>{{ matchup.team1.points }}</td>
+                <td>
+                    <div class="team-name">
+                        {% if matchup.team2.logo %}
+                        <img src="{{ matchup.team2.logo }}" alt="{{ matchup.team2.name }} Logo" class="team-logo">
+                        {% endif %}
+                        <a href="{{ url_for('rosters.roster_details', league_id=league_id, roster_id=matchup.team2.id) }}">
+                            {{ matchup.team2.name }}
+                        </a>
+                    </div>
+                </td>
                 <td>{{ matchup.team2.points }}</td>
             </tr>
             {% endfor %}
@@ -77,3 +104,4 @@
     {% endif %}
 </body>
 </html>
+
