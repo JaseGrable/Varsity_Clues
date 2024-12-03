@@ -3,6 +3,7 @@ import requests
 import pymysql
 from dotenv import load_dotenv
 import os
+import json
 
 # Load environment variables from .env file
 load_dotenv()
@@ -171,7 +172,7 @@ def league_details(league_id):
 
     # Fetch current matchups
     current_week = get_current_week()
-    matchups_data = requests.get(f"{BASE_URL}/league/{league_id}/matchups/{current_week}").json()
+    matchups_data = get_league_matchups(league_id, current_week)
 
     # Process matchups
     matchups = []
@@ -192,7 +193,6 @@ def league_details(league_id):
             })
 
     return render_template('league_details.html', league=league, rosters=rosters, matchups=matchups)
-
 
 # Route to display roster details
 @app.route('/league/<string:league_id>/roster/<int:roster_id>', methods=['GET'])
@@ -226,20 +226,59 @@ def roster_details(league_id, roster_id):
         bench=bench,
         taxi=taxi
     )
+
+# Route to display league history
 @app.route('/league/<string:league_id>/history', methods=['GET'])
 def league_history(league_id):
-    league = get_league_details(league_id)
+    try:
+        # Connect to the database
+        connection = pymysql.connect(**DB_CONFIG)
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-    if not league or not league.get('previous_league_id'):
-        return render_template('league_history.html', error="No history available for this league.", league=None, previous_league=None)
+        # Fetch previous league details
+        cursor.execute("SELECT * FROM previous_leagues WHERE league_id = %s", (league_id,))
+        league = cursor.fetchone()
 
-    # Fetch the previous league details using the previous_league_id
-    previous_league_id = league['previous_league_id']
-    previous_league = get_league_details(previous_league_id)
+        # Fetch previous rosters
+        cursor.execute("SELECT * FROM previous_rosters WHERE league_id = %s", (league_id,))
+        rosters = cursor.fetchall()
 
-    return render_template('league_history.html', league=league, previous_league=previous_league)
+        if not league:
+            league = {
+                'name': 'Unknown League',
+                'league_id': league_id
+            }
+
+        if not rosters:
+            return render_template('league_history.html', league=league, error="No previous league data found.", standings=[], winners_bracket=[], losers_bracket=[])
+
+        # Sort standings by wins, then PF (descending)
+        standings = sorted(rosters, key=lambda r: (-json.loads(r['settings'])['wins'], -json.loads(r['settings'])['fpts']))
+
+        # Assign ranks to standings
+        for index, roster in enumerate(standings, start=1):
+            roster['rank'] = index
+
+        # Fetch playoff bracket data (mocked here, can be added based on API or database)
+        winners_bracket = []
+        losers_bracket = []
+
+        return render_template(
+            'league_history.html',
+            league=league,
+            standings=standings,
+            winners_bracket=winners_bracket,
+            losers_bracket=losers_bracket
+        )
+
+    except Exception as e:
+        print(f"Error retrieving league history: {e}")
+        league = {'name': 'Unknown League', 'league_id': league_id}
+        return render_template('league_history.html', league=league, error="Error retrieving league history.", standings=[], winners_bracket=[], losers_bracket=[])
+    finally:
+        if 'connection' in locals():
+            connection.close()
 
 
 if __name__ == '__main__':
     app.run(debug=True)
-

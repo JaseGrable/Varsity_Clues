@@ -95,11 +95,9 @@
     <p>No matchups available for the current week.</p>
     {% endif %}
 
-    <h3><a href="{{ url_for('league_history', league_id=league.league_id) }}">View League History</a></h3>
-
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
+    {% if previous_league_id %}
+    <h3><a href="{{ url_for('league_history', league_id=previous_league_id) }}">View League History</a></h3>
+{% endif %}
 </body>
 </html>
 
