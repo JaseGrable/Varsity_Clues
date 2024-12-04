@@ -3,7 +3,6 @@ from routes.home import home_bp
 from routes.leagues import leagues_bp
 from routes.rosters import rosters_bp
 from dotenv import load_dotenv
-import os
 
 # Load environment variables
 load_dotenv()
@@ -21,3 +20,4 @@ def create_app():
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True)
+

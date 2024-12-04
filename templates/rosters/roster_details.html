@@ -1,52 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ team_name }}</title>
+    <title>{{ team_name }} - Roster Details</title>
 </head>
 <body>
     <h1>{{ team_name }}</h1>
-    <h2>Owner: {{ username }}</h2>
+    <p>Owner: {{ username }}</p>
 
-    <h3>Starters</h3>
+    <h2>Starters</h2>
     <ul>
         {% for player in starters %}
-        <li>{{ player }}</li>
+            <li>{{ player }}</li>
         {% endfor %}
     </ul>
 
-    <h3>Bench</h3>
+    <h2>Bench</h2>
     <ul>
         {% for player in bench %}
-        <li>{{ player }}</li>
+            <li>{{ player }}</li>
         {% endfor %}
     </ul>
 
-    {% if taxi %}
-    <h3>Taxi Squad</h3>
+    <h2>Taxi Squad</h2>
     <ul>
         {% for player in taxi %}
-        <li>{{ player }}</li>
+            <li>{{ player }}</li>
         {% endfor %}
     </ul>
-    {% else %}
-    <p>No players in Taxi Squad.</p>
-    {% endif %}
-</body>
-</html>
-
-
-    <h3>Draft Picks</h3>
-    <ul>
-        {% for pick in draft_picks %}
-        <li>{{ pick }}</li>
-        {% endfor %}
-    </ul>
-
-    {% if draft_picks|length == 0 %}
-        <p>No draft picks available.</p>
-    {% endif %}
 </body>
 </html>
 
