@@ -3,63 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Matchups</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-        }
-        h1, h3 {
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            overflow-x: auto;
-            display: block;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        tbody tr:nth-child(odd) {
-            background-color: #f9f9f9;
-        }
-        hr {
-            margin: 20px 0;
-        }
-        .no-data {
-            color: #888;
-        }
-        .team-name {
-            display: flex;
-            align-items: center;
-        }
-        .team-logo {
-            width: 30px;
-            height: 30px;
-            margin-right: 10px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        a {
-            text-decoration: none;
-            color: #007BFF;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <title>League Details</title>
 </head>
 <body>
-    <h1>Week {{ week }} Matchups</h1>
+    <h1>{{ league.name }}</h1>
+    <a href="{{ url_for('leagues.leagues', user_id=league.user_id) }}">Back to Leagues</a>
 
+    <h2>Standings</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Team</th>
+                <th>Wins</th>
+                <th>Points For</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for roster in rosters %}
+            <tr>
+                <td>{{ roster.rank }}</td>
+                <td>{{ roster.team_name }}</td>
+                <td>{{ roster.settings.wins }}</td>
+                <td>{{ roster.settings.fpts }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Week {{ week }} Matchups</h2>
     {% if matchups %}
     <table>
         <thead>
@@ -73,27 +45,9 @@
         <tbody>
             {% for matchup in matchups %}
             <tr>
-                <td>
-                    <div class="team-name">
-                        {% if matchup.team1.logo %}
-                        <img src="{{ matchup.team1.logo }}" alt="{{ matchup.team1.name }} Logo" class="team-logo">
-                        {% endif %}
-                        <a href="{{ url_for('rosters.roster_details', league_id=league_id, roster_id=matchup.team1.id) }}">
-                            {{ matchup.team1.name }}
-                        </a>
-                    </div>
-                </td>
+                <td>{{ matchup.team1.name }}</td>
                 <td>{{ matchup.team1.points }}</td>
-                <td>
-                    <div class="team-name">
-                        {% if matchup.team2.logo %}
-                        <img src="{{ matchup.team2.logo }}" alt="{{ matchup.team2.name }} Logo" class="team-logo">
-                        {% endif %}
-                        <a href="{{ url_for('rosters.roster_details', league_id=league_id, roster_id=matchup.team2.id) }}">
-                            {{ matchup.team2.name }}
-                        </a>
-                    </div>
-                </td>
+                <td>{{ matchup.team2.name }}</td>
                 <td>{{ matchup.team2.points }}</td>
             </tr>
             {% endfor %}

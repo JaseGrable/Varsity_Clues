@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, url_for
 from utils.sleeper_api import (
     get_user_leagues,
     get_league_details,
@@ -19,7 +19,7 @@ def leagues(user_id):
     leagues = get_user_leagues(user_id)
     if not leagues:
         return render_template("leagues/leagues.html", error="No leagues found.")
-    return render_template("leagues/leagues.html", leagues=leagues)
+    return render_template("leagues/leagues.html", leagues=leagues, user_id=user_id)
 
 # Route to display league details
 @leagues_bp.route("/<string:league_id>/details", methods=["GET"])
@@ -68,22 +68,20 @@ def league_details(league_id):
     # Process matchups
     matchups = []
     for matchup in matchups_data:
-        team1 = next((r for r in rosters if r["roster_id"] == matchup["roster_id"]), None)
-        opponent_id = matchup.get("matchup_id")
-        team2 = next((r for r in rosters if r["roster_id"] == opponent_id), None)
+        team1 = next((r for r in rosters if r['roster_id'] == matchup['roster_id']), None)
+        team2 = next((m for m in matchups_data if m.get('matchup_id') == matchup.get('matchup_id') and m['roster_id'] != matchup['roster_id']), None)
 
-        matchups.append(
-            {
-                "team1": {
-                    "name": team1["team_name"] if team1 else "Unknown Team",
-                    "points": matchup.get("points", 0),
+        if team1 and team2:
+            matchups.append({
+                'team1': {
+                    'name': team1['team_name'],
+                    'points': matchup.get('points', 0)
                 },
-                "team2": {
-                    "name": team2["team_name"] if team2 else "Unknown Team",
-                    "points": matchup.get("points_against", 0),
-                },
-            }
-        )
+                'team2': {
+                    'name': next((r['team_name'] for r in rosters if r['roster_id'] == team2['roster_id']), 'Unknown'),
+                    'points': team2.get('points', 0)
+                }
+            })
 
     return render_template(
         "leagues/league_details.html",
@@ -92,4 +90,3 @@ def league_details(league_id):
         matchups=matchups,
         week=current_week,
     )
-
