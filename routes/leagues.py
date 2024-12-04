@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, url_for
+from flask import Blueprint, render_template
 from utils.sleeper_api import (
     get_user_leagues,
     get_league_details,
@@ -19,7 +19,7 @@ def leagues(user_id):
     leagues = get_user_leagues(user_id)
     if not leagues:
         return render_template("leagues/leagues.html", error="No leagues found.")
-    return render_template("leagues/leagues.html", leagues=leagues, user_id=user_id)
+    return render_template("leagues/leagues.html", leagues=leagues)
 
 # Route to display league details
 @leagues_bp.route("/<string:league_id>/details", methods=["GET"])
@@ -67,21 +67,40 @@ def league_details(league_id):
 
     # Process matchups
     matchups = []
-    for matchup in matchups_data:
-        team1 = next((r for r in rosters if r['roster_id'] == matchup['roster_id']), None)
-        team2 = next((m for m in matchups_data if m.get('matchup_id') == matchup.get('matchup_id') and m['roster_id'] != matchup['roster_id']), None)
+    processed_matchups = set()  # Track processed matchup IDs
 
-        if team1 and team2:
-            matchups.append({
-                'team1': {
-                    'name': team1['team_name'],
-                    'points': matchup.get('points', 0)
+    for matchup in matchups_data:
+        # Get team1 and opponent_id
+        team1 = next((r for r in rosters if r["roster_id"] == matchup["roster_id"]), None)
+        opponent_id = matchup.get("matchup_id")
+        team2 = next((r for r in rosters if r["roster_id"] == opponent_id), None)
+
+        # Generate a unique key for the matchup
+        matchup_key = frozenset([
+            team1["roster_id"] if team1 else "Unknown_Team1",
+            team2["roster_id"] if team2 else "Unknown_Team2"
+        ])
+
+        # Skip if this matchup has already been processed
+        if matchup_key in processed_matchups:
+            continue
+
+        # Add the matchup to the processed set
+        processed_matchups.add(matchup_key)
+
+        # Append the matchup details
+        matchups.append(
+            {
+                "team1": {
+                    "name": team1["team_name"] if team1 else "Unknown Team",
+                    "points": matchup.get("points", 0),
                 },
-                'team2': {
-                    'name': next((r['team_name'] for r in rosters if r['roster_id'] == team2['roster_id']), 'Unknown'),
-                    'points': team2.get('points', 0)
-                }
-            })
+                "team2": {
+                    "name": team2["team_name"] if team2 else "Unknown Team",
+                    "points": matchup.get("points_against", 0),  # Use correct key for opponent points
+                },
+            }
+        )
 
     return render_template(
         "leagues/league_details.html",
@@ -90,3 +109,26 @@ def league_details(league_id):
         matchups=matchups,
         week=current_week,
     )
+
+# Route to display league history
+@leagues_bp.route("/<string:league_id>/history", methods=["GET"])
+def league_history(league_id):
+    league, standings = fetch_previous_league_data(league_id)
+    if not league:
+        return render_template(
+            "leagues/league_history.html",
+            error="League history not found.",
+            standings=[],
+            winners_bracket=[],
+            losers_bracket=[],
+        )
+    winners_bracket = []  # Replace with actual playoff bracket logic
+    losers_bracket = []  # Replace with actual playoff bracket logic
+    return render_template(
+        "leagues/league_history.html",
+        league=league,
+        standings=standings,
+        winners_bracket=winners_bracket,
+        losers_bracket=losers_bracket,
+    )
+
