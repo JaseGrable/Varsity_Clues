@@ -67,26 +67,23 @@ def league_details(league_id):
 
     # Process matchups
     matchups = []
-    processed_matchups = set()  # Track processed matchup IDs
+    processed_matchup_ids = set()  # Track processed matchup IDs
 
     for matchup in matchups_data:
-        # Get team1 and opponent_id
+        # Get team1 and its matchup ID
         team1 = next((r for r in rosters if r["roster_id"] == matchup["roster_id"]), None)
-        opponent_id = matchup.get("matchup_id")
-        team2 = next((r for r in rosters if r["roster_id"] == opponent_id), None)
+        matchup_id = matchup.get("matchup_id")
 
-        # Generate a unique key for the matchup
-        matchup_key = frozenset([
-            team1["roster_id"] if team1 else "Unknown_Team1",
-            team2["roster_id"] if team2 else "Unknown_Team2"
-        ])
-
-        # Skip if this matchup has already been processed
-        if matchup_key in processed_matchups:
+        # Skip if this matchup ID has already been processed
+        if matchup_id in processed_matchup_ids:
             continue
 
-        # Add the matchup to the processed set
-        processed_matchups.add(matchup_key)
+        # Find the opponent (team2) based on the same matchup ID
+        team2_matchup = next((m for m in matchups_data if m["matchup_id"] == matchup_id and m["roster_id"] != matchup["roster_id"]), None)
+        team2 = next((r for r in rosters if r["roster_id"] == team2_matchup["roster_id"]), None) if team2_matchup else None
+
+        # Add the matchup ID to the processed set
+        processed_matchup_ids.add(matchup_id)
 
         # Append the matchup details
         matchups.append(
@@ -97,11 +94,12 @@ def league_details(league_id):
                 },
                 "team2": {
                     "name": team2["team_name"] if team2 else "Unknown Team",
-                    "points": matchup.get("points_against", 0),  # Use correct key for opponent points
+                    "points": team2_matchup.get("points", 0) if team2_matchup else 0,
                 },
             }
         )
 
+    # Render the template
     return render_template(
         "leagues/league_details.html",
         league=league,
