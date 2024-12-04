@@ -21,79 +21,35 @@
     </style>
 </head>
 <body>
-    <h1>League History: {{ league.name or "Unknown League" }}</h1>
+    <h1>{{ league.name }} - Previous Season Rankings</h1>
 
-    <h2>Standings</h2>
+    {% if standings %}
     <table>
-        <tr>
-            <th>Rank</th>
-            <th>Team</th>
-            <th>Wins</th>
-            <th>Losses</th>
-            <th>PF</th>
-            <th>PA</th>
-        </tr>
-        {% for roster in rosters %}
-        <tr>
-            <td>{{ roster.rank or "-" }}</td>
-            <td>{{ roster.team_name or "Unknown Team" }}</td>
-            <td>{{ roster.settings.wins or 0 }}</td>
-            <td>{{ roster.settings.losses or 0 }}</td>
-            <td>{{ roster.settings.fpts or 0 }}</td>
-            <td>{{ roster.settings.fpts_against or 0 }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
-    <h2>Playoff Bracket</h2>
-    <h3>Winners Bracket</h3>
-    {% if winners_bracket %}
-    <table>
-        <tr>
-            <th>Round</th>
-            <th>Matchup</th>
-            <th>Team 1</th>
-            <th>Team 2</th>
-        </tr>
-        {% for match in winners_bracket %}
-        <tr>
-            <td>{{ match.r or "-" }}</td>
-            <td>{{ match.m or "-" }}</td>
-            <td>{{ match.t1 or "Unknown Team" }}</td>
-            <td>{{ match.t2 or "Unknown Team" }}</td>
-        </tr>
-        {% endfor %}
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Team Name</th>
+                <th>Owner</th>
+                <th>Wins</th>
+                <th>Points For</th>
+                <th>Points Against</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for roster in standings %}
+            <tr>
+                <td>{{ roster.rank }}</td>
+                <td>{{ roster.team_name }}</td>
+                <td>{{ roster.username }}</td>
+                <td>{{ roster.settings.wins }}</td>
+                <td>{{ roster.settings.fpts }}</td>
+                <td>{{ roster.settings.fpts_against }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
     {% else %}
-        <p>No winners bracket data available.</p>
-    {% endif %}
-
-    <h3>Losers Bracket</h3>
-    {% if losers_bracket %}
-    <table>
-        <tr>
-            <th>Round</th>
-            <th>Matchup</th>
-            <th>Team 1</th>
-            <th>Team 2</th>
-        </tr>
-        {% for match in losers_bracket %}
-        <tr>
-            <td>{{ match.r or "-" }}</td>
-            <td>{{ match.m or "-" }}</td>
-            <td>{{ match.t1 or "Unknown Team" }}</td>
-            <td>{{ match.t2 or "Unknown Team" }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-        <p>No losers bracket data available.</p>
-    {% endif %}
-
-    <p><a href="{{ url_for('leagues.league_details', league_id=league.league_id) }}">Back to League Details</a></p>
-
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
+    <p>No data available for the previous season.</p>
     {% endif %}
 </body>
 </html>

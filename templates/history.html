@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ league.name }} - History</title>
+</head>
+<body>
+    <h1>{{ league.name }} - History</h1>
+
+    {% if error %}
+        <p>{{ error }}</p>
+    {% else %}
+        <h2>Rosters</h2>
+        <ul>
+            {% for roster in rosters %}
+                <li>{{ roster.owner_id }} - {{ roster.settings.wins }} wins</li>
+            {% endfor %}
+        </ul>
+
+        <h2>Matchups</h2>
+        <ul>
+            {% for matchup in matchups %}
+                <li>
+                    {{ matchup.team1.name }}: {{ matchup.team1.points }}
+                    vs
+                    {{ matchup.team2.name }}: {{ matchup.team2.points }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <a href="{{ url_for('leagues.league_details', league_id=league.league_id) }}">Back to League Details</a>
+</body>
+</html>

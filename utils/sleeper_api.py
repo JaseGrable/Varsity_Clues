@@ -147,3 +147,56 @@ def map_players_with_points(player_ids):
     finally:
         if 'connection' in locals():
             connection.close()
+
+def get_previous_league_id(current_league):
+    """
+    Retrieve the ID of the previous year's league.
+    """
+    try:
+        return current_league.get("previous_league_id")
+    except Exception as e:
+        print(f"Error fetching previous league ID: {e}")
+        return None
+
+def get_playoff_bracket(league_id, bracket_type):
+    """
+    Fetch the playoff bracket for a league.
+
+    Parameters:
+        league_id (str): The league ID.
+        bracket_type (str): Either "winners" or "losers".
+
+    Returns:
+        list: A list of playoff bracket matchups.
+    """
+    if bracket_type not in ["winners", "losers"]:
+        raise ValueError("Invalid bracket type. Use 'winners' or 'losers'.")
+
+    url = f"{BASE_URL}/league/{league_id}/{bracket_type}_bracket"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"Error fetching {bracket_type} bracket: {e}")
+        return []
+
+def get_previous_year_data(previous_league_id):
+    """
+    Fetch all data for the previous year's league, including rosters and matchups.
+    """
+    try:
+        rosters = get_league_rosters(previous_league_id)
+        previous_year_matchups = {}
+        league_details = get_league_details(previous_league_id)
+
+        # Fetch matchups by week
+        total_weeks = league_details.get("settings", {}).get("playoff_week_start", 15) - 1
+        for week in range(1, total_weeks + 1):
+            previous_year_matchups[week] = get_league_matchups(previous_league_id, week)
+
+        return league_details, rosters, previous_year_matchups
+    except Exception as e:
+        print(f"Error fetching previous year data: {e}")
+        return None, None, None
