@@ -6,8 +6,7 @@ from utils.sleeper_api import (
     get_current_week,
     get_league_rosters,
     get_league_users,
-    get_previous_league_id,
-    get_previous_year_data,
+    get_user_league_history,
 )
 from utils.helpers import map_players
 
@@ -20,11 +19,11 @@ def leagues(user_id):
     leagues = get_user_leagues(user_id)
     if not leagues:
         return render_template("leagues/leagues.html", error="No leagues found.")
-    return render_template("leagues/leagues.html", leagues=leagues)
+    return render_template("leagues/leagues.html", leagues=leagues, user_id=user_id)
 
 # Route to display league details
-@leagues_bp.route("/<string:league_id>/details", methods=["GET"])
-def league_details(league_id):
+@leagues_bp.route("/<string:user_id>/details/<string:league_id>", methods=["GET"])
+def league_details(user_id, league_id):
     league = get_league_details(league_id)
     rosters = get_league_rosters(league_id)
     users = get_league_users(league_id)
@@ -35,6 +34,7 @@ def league_details(league_id):
             error="League details, rosters, or users not found.",
             rosters=[],
             matchups=[],
+            user_id=user_id,
         )
 
     # Map user IDs to team names and usernames
@@ -95,51 +95,32 @@ def league_details(league_id):
         rosters=rosters,
         matchups=matchups,
         week=current_week,
+        user_id=user_id,
     )
 
-# Route to display league history
-@leagues_bp.route("/<string:league_id>/history", methods=["GET"])
-def league_history(league_id):
-    league = get_league_details(league_id)
-    previous_league_id = get_previous_league_id(league_id)
-
-    if not previous_league_id:
+@leagues_bp.route("/<string:user_id>/history", methods=["GET"])
+def league_history(user_id):
+    history = get_user_league_history(user_id)
+    current_league = get_user_leagues(user_id)  # Fetch the current league details
+    
+    if not history:
         return render_template(
             "leagues/league_history.html",
-            error="No history available for this league.",
-            standings=[],
-            winners_bracket=[],
-            losers_bracket=[],
-            league=league,
+            error="No historical leagues found.",
+            history=[],
+            user_id=user_id,
+            current_league_id=None,
         )
 
-    previous_year_data = get_previous_year_data(previous_league_id)
+    # Extract the most recent league ID for the "Back to Current Season" link
+    current_league_id = current_league[0]['league_id'] if current_league else None
 
-    if not previous_year_data:
-        return render_template(
-            "leagues/league_history.html",
-            error="No historical data found.",
-            standings=[],
-            winners_bracket=[],
-            losers_bracket=[],
-            league=league,
-        )
-
-    standings = sorted(
-        previous_year_data["rosters"],
-        key=lambda r: (-r["settings"]["wins"], -r["settings"]["fpts"]),
-    )
-
-    for index, roster in enumerate(standings, start=1):
-        roster["rank"] = index
-
-    winners_bracket = previous_year_data.get("winners_bracket", [])
-    losers_bracket = previous_year_data.get("losers_bracket", [])
+    # Sort history by year, descending
+    sorted_history = sorted(history.items(), key=lambda x: x[0], reverse=True)
 
     return render_template(
         "leagues/league_history.html",
-        league=league,
-        standings=standings,
-        winners_bracket=winners_bracket,
-        losers_bracket=losers_bracket,
+        history=sorted_history,
+        user_id=user_id,
+        current_league_id=current_league_id,
     )

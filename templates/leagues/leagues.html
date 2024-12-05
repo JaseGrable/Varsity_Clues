@@ -3,29 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Leagues</title>
+    <title>Leagues</title>
+    <style>
+        /* Your CSS styles here */
+    </style>
 </head>
 <body>
     <h1>Your Leagues</h1>
 
-    {% if leagues %}
-    <ul>
-        {% for league in leagues %}
-        <li>
-            <a href="{{ url_for('leagues.league_details', league_id=league.league_id) }}">
-                {{ league.name }}
-            </a>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-        <p>No leagues found. Please check your account or try again later.</p>
-    {% endif %}
-
     {% if error %}
-        <p style="color: red;">{{ error }}</p>
+        <p>{{ error }}</p>
+    {% else %}
+        <ul>
+            {% for league in leagues %}
+                <li>
+                    <a href="{{ url_for('leagues.league_details', user_id=user_id, league_id=league.league_id) }}">
+                        {{ league.name }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('leagues.league_history', user_id=user_id) }}">View League History</a>
     {% endif %}
 </body>
 </html>
-
-

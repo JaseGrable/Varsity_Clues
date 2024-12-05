@@ -5,14 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ league.name }}</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-        }
-        h1, h2 {
-            color: #333;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -37,44 +29,29 @@
             padding: 10px;
             background-color: #f9f9f9;
             text-align: center;
-            border-radius: 8px;
         }
         .team-card a {
             text-decoration: none;
             font-weight: bold;
             color: #333;
         }
-        .team-card:hover {
-            background-color: #eef;
-        }
-        .nav-links {
-            margin-bottom: 20px;
-        }
-        .nav-links a {
-            margin-right: 15px;
+        .history-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: #fff;
             text-decoration: none;
-            font-weight: bold;
-            color: #007BFF;
+            border-radius: 5px;
         }
-        .nav-links a:hover {
-            text-decoration: underline;
-        }
-        .highlight {
-            background-color: #ffd700;
-            font-weight: bold;
+        .history-link:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <h1>{{ league.name }}</h1>
 
-    <!-- Navigation Links -->
-    <div class="nav-links">
-        <a href="{{ url_for('leagues.league_details', league_id=league.league_id) }}">Current Season</a>
-        <a href="{{ url_for('leagues.league_history', league_id=league.league_id) }}">History</a>
-    </div>
-
-    <!-- Teams Section -->
     <h2>Teams</h2>
     <div class="team-box">
         {% for roster in rosters %}
@@ -86,59 +63,52 @@
         {% endfor %}
     </div>
 
-    <!-- Standings Table -->
     <h2>Standings</h2>
     <table>
-        <thead>
-            <tr>
-                <th>Rank</th>
-                <th>Team</th>
-                <th>Wins</th>
-                <th>Losses</th>
-                <th>PF</th>
-                <th>PA</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for roster in rosters %}
-            <tr class="{% if loop.index == 1 %}highlight{% endif %}">
-                <td>{{ roster.rank }}</td>
-                <td>{{ roster.team_name }}</td>
-                <td>{{ roster.settings.wins }}</td>
-                <td>{{ roster.settings.losses }}</td>
-                <td>{{ roster.settings.fpts }}</td>
-                <td>{{ roster.settings.fpts_against }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+        <tr>
+            <th>Rank</th>
+            <th>Team</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>PF</th>
+            <th>PA</th>
+        </tr>
+        {% for roster in rosters %}
+        <tr>
+            <td>{{ roster.rank }}</td>
+            <td>{{ roster.team_name }}</td>
+            <td>{{ roster.settings.wins }}</td>
+            <td>{{ roster.settings.losses }}</td>
+            <td>{{ roster.settings.fpts }}</td>
+            <td>{{ roster.settings.fpts_against }}</td>
+        </tr>
+        {% endfor %}
     </table>
 
-    <!-- Matchups Section -->
     <h2>Week {{ week }} Matchups</h2>
     {% if matchups %}
     <table>
-        <thead>
-            <tr>
-                <th>Team 1</th>
-                <th>Score</th>
-                <th>Team 2</th>
-                <th>Score</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for matchup in matchups %}
-            <tr>
-                <td>{{ matchup.team1.name }}</td>
-                <td>{{ matchup.team1.points }}</td>
-                <td>{{ matchup.team2.name }}</td>
-                <td>{{ matchup.team2.points }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+        <tr>
+            <th>Team 1</th>
+            <th>Score</th>
+            <th>Team 2</th>
+            <th>Score</th>
+        </tr>
+        {% for matchup in matchups %}
+        <tr>
+            <td>{{ matchup.team1.name }}</td>
+            <td>{{ matchup.team1.points }}</td>
+            <td>{{ matchup.team2.name }}</td>
+            <td>{{ matchup.team2.points }}</td>
+        </tr>
+        {% endfor %}
     </table>
     {% else %}
     <p>No matchups found for the current week.</p>
     {% endif %}
+
+    <a href="{{ url_for('leagues.league_history', user_id=user_id, league_id=league.league_id) }}" class="history-link">
+        View League History
+    </a>
 </body>
 </html>
-

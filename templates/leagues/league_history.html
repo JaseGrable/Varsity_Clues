@@ -3,54 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>League History - {{ league.name or "Unknown League" }}</title>
+    <title>League History</title>
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
         }
-        th, td {
+
+        h1, h2 {
+            color: #333;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007BFF;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
             border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+            border-radius: 5px;
         }
-        th {
-            background-color: #f4f4f4;
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .back-link:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>{{ league.name }} - Previous Season Rankings</h1>
+    <h1>League History</h1>
 
-    {% if standings %}
-    <table>
-        <thead>
-            <tr>
-                <th>Rank</th>
-                <th>Team Name</th>
-                <th>Owner</th>
-                <th>Wins</th>
-                <th>Points For</th>
-                <th>Points Against</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for roster in standings %}
-            <tr>
-                <td>{{ roster.rank }}</td>
-                <td>{{ roster.team_name }}</td>
-                <td>{{ roster.username }}</td>
-                <td>{{ roster.settings.wins }}</td>
-                <td>{{ roster.settings.fpts }}</td>
-                <td>{{ roster.settings.fpts_against }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {% if error %}
+        <p class="error">{{ error }}</p>
     {% else %}
-    <p>No data available for the previous season.</p>
+        {% for year, leagues in history %}
+            <h2>{{ year }}</h2>
+            <ul>
+                {% for league in leagues %}
+                    <li>
+                        <a href="{{ url_for('leagues.league_details', user_id=user_id, league_id=league['league_id']) }}">
+                            {{ league['name'] }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
     {% endif %}
+
+    <a href="{{ url_for('leagues.league_details', user_id=user_id, league_id=current_league_id) }}" class="back-link">
+        Back to Current Season
+    </a>
 </body>
 </html>
-
